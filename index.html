@@ -2,16 +2,34 @@
 <html>
 <head>
 <meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
 <title>ARTILLERY</title>
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="ARTILLERY">
+<meta name="twitter:description" content="2-player tank duel. Set angle and power, watch the wind, FIRE.">
+<meta name="twitter:image" content="https://mrchumley.github.io/artillery/preview.png">
+<meta property="og:title" content="ARTILLERY">
+<meta property="og:description" content="2-player tank duel. Set angle and power, watch the wind, FIRE.">
+<meta property="og:image" content="https://mrchumley.github.io/artillery/preview.png">
+<meta property="og:url" content="https://mrchumley.github.io/artillery/">
 <style>
-  html,body{margin:0;height:100%;background:#000;color:#6f6;font-family:"Courier New",monospace;display:flex;flex-direction:column;align-items:center;justify-content:center;}
+  html,body{margin:0;min-height:100%;background:#000;color:#6f6;font-family:"Courier New",monospace;display:flex;flex-direction:column;align-items:center;justify-content:center;}
   h1{font-size:18px;letter-spacing:6px;margin:8px 0;font-weight:normal;}
-  canvas{width:640px;height:400px;border:2px solid #3a3;background:#000;box-shadow:0 0 24px #040;image-rendering:pixelated;image-rendering:crisp-edges;}
+  canvas{
+    width:min(640px, 96vw);
+    height:auto;
+    aspect-ratio:320/200;
+    border:2px solid #3a3;
+    background:#000;
+    box-shadow:0 0 24px #040;
+    image-rendering:pixelated;
+    image-rendering:crisp-edges;
+  }
   .row{margin:10px 0;font-size:14px;display:flex;gap:12px;align-items:center;flex-wrap:wrap;justify-content:center;}
   input{width:56px;background:#000;color:#6f6;border:1px solid #3a3;font-family:inherit;font-size:14px;padding:2px 4px;}
   button{background:#000;color:#6f6;border:1px solid #6f6;font-family:inherit;padding:3px 12px;cursor:pointer;}
   button:disabled{opacity:.4;cursor:default;}
-  #msg{min-height:18px;font-size:13px;}
+  #msg{min-height:18px;font-size:13px;text-align:center;padding:0 12px;}
 </style>
 </head>
 <body>
