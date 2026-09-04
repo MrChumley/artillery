@@ -674,7 +674,7 @@ function aimFromPoint(x,y){
     : Math.atan2(dy,-dx)*180/Math.PI;
   angEl.value=clamp(Math.round(a),1,179);
   const dist=Math.hypot(dx,dy);
-  powEl.value=clamp(Math.round((dist-8)*100/110),1,100);
+  powEl.value=clamp(Math.round(dist*30/(W/2)),1,50);
 }
 function endSwipe(){ swiping=false; }
 
