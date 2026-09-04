@@ -42,6 +42,7 @@
     image-rendering:pixelated;
     image-rendering:crisp-edges;
     flex:0 0 auto;
+    touch-action:none;
   }
   .ui{display:flex;flex-direction:column;align-items:center;width:min(640px,100%);}
   .row{margin:6px 0;font-size:14px;display:flex;gap:8px;align-items:center;flex-wrap:wrap;justify-content:center;}
@@ -59,6 +60,30 @@
   #room{width:140px;}
   #msg,#net{min-height:18px;font-size:13px;text-align:center;}
   #net{opacity:.8;}
+  .step{
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+    gap:3px;
+    font-size:12px;
+  }
+  .step input[type=number]{
+    width:52px;
+    text-align:center;
+    font-size:16px;
+    -moz-appearance:textfield;
+  }
+  .step input[type=number]::-webkit-outer-spin-button,
+  .step input[type=number]::-webkit-inner-spin-button{
+    -webkit-appearance:none;
+    margin:0;
+  }
+  .nudge{
+    width:52px;
+    padding:4px 0;
+    line-height:1;
+    touch-action:manipulation;
+  }
 
   @media (orientation:landscape) and (max-height:500px){
     body{
@@ -90,8 +115,18 @@
   <h1>ARTILLERY</h1>
   <div class="row">
     P<span id="who">1</span>
-    ANGLE <input id="ang" type="number" value="45" min="1" max="179">
-    POWER <input id="pow" type="number" value="50" min="1" max="100">
+    <span class="step">
+      ANGLE
+      <button type="button" class="nudge" data-for="ang" data-d="1">▲</button>
+      <input id="ang" type="number" value="45" min="1" max="179">
+      <button type="button" class="nudge" data-for="ang" data-d="-1">▼</button>
+    </span>
+    <span class="step">
+      POWER
+      <button type="button" class="nudge" data-for="pow" data-d="1">▲</button>
+      <input id="pow" type="number" value="50" min="1" max="100">
+      <button type="button" class="nudge" data-for="pow" data-d="-1">▼</button>
+    </span>
     WIND <span id="wind">0</span>
     <button id="fire">FIRE</button>
     <button id="reset">RESET</button>
@@ -124,7 +159,7 @@ const netEl=document.getElementById('net');
 
 let height,tanks,turn,shot,wind,over,particles;
 let peer=null,conn=null,netRole=null,aiTimer=0;
-let ac=null;
+let ac=null,swiping=false,holdTimer=0;
 
 function rnd(a,b){return a+Math.random()*(b-a);}
 function clamp(v,a,b){return Math.max(a,Math.min(b,v));}
@@ -199,6 +234,7 @@ function sfxFire(){
 function sfxHit(){
   noise(0.28,0.18,0);
   tone(90,0.22,'square',0.08,0,40);
+  try{ if(navigator.vibrate) navigator.vibrate([30,40,90]); }catch(e){}
 }
 
 function sfxGround(){
@@ -591,6 +627,74 @@ function joinGame(){
   });
   peer.on('error',e=>setNet('error '+e.type));
 }
+
+function nudge(id,d){
+  const el=id==='ang'?angEl:powEl;
+  const min=Number(el.min), max=Number(el.max);
+  el.value=clamp(Number(el.value||0)+d, min, max);
+}
+function startNudge(id,d){
+  nudge(id,d);
+  clearTimeout(holdTimer);
+  holdTimer=setTimeout(function tickNudge(){
+    nudge(id,d);
+    holdTimer=setTimeout(tickNudge,70);
+  },280);
+}
+function stopNudge(){ clearTimeout(holdTimer); }
+
+document.querySelectorAll('.nudge').forEach(btn=>{
+  const id=btn.dataset.for;
+  const d=Number(btn.dataset.d);
+  btn.addEventListener('pointerdown',e=>{
+    e.preventDefault();
+    btn.setPointerCapture(e.pointerId);
+    startNudge(id,d);
+  });
+  btn.addEventListener('pointerup',stopNudge);
+  btn.addEventListener('pointercancel',stopNudge);
+  btn.addEventListener('lostpointercapture',stopNudge);
+});
+
+function canvasPos(e){
+  const r=canvas.getBoundingClientRect();
+  return {
+    x:(e.clientX-r.left)*(W/r.width),
+    y:(e.clientY-r.top)*(H/r.height)
+  };
+}
+function aimFromPoint(x,y){
+  if(!canLocalFire()) return;
+  const t=tanks[turn];
+  if(!t||!t.alive) return;
+  const dx=x-t.x;
+  const dy=t.y-y;
+  const a=turn===0
+    ? Math.atan2(dy,dx)*180/Math.PI
+    : Math.atan2(dy,-dx)*180/Math.PI;
+  angEl.value=clamp(Math.round(a),1,179);
+  const dist=Math.hypot(dx,dy);
+  powEl.value=clamp(Math.round((dist-8)*100/110),1,100);
+}
+function endSwipe(){ swiping=false; }
+
+canvas.addEventListener('pointerdown',e=>{
+  if(!canLocalFire()) return;
+  e.preventDefault();
+  swiping=true;
+  canvas.setPointerCapture(e.pointerId);
+  const p=canvasPos(e);
+  aimFromPoint(p.x,p.y);
+});
+canvas.addEventListener('pointermove',e=>{
+  if(!swiping) return;
+  e.preventDefault();
+  const p=canvasPos(e);
+  aimFromPoint(p.x,p.y);
+});
+canvas.addEventListener('pointerup',endSwipe);
+canvas.addEventListener('pointercancel',endSwipe);
+canvas.addEventListener('lostpointercapture',endSwipe);
 
 fireBtn.onclick=()=>{ audio(); fire(); };
 document.getElementById('reset').onclick=reset;
