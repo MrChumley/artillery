@@ -1,6 +1,7 @@
 <!DOCTYPE html>
 <html>
 <head>
+<meta charset="utf-8">
 <meta name="twitter:card" content="summary_large_image">
 <meta name="twitter:title" content="ARTILLERY">
 <meta name="twitter:description" content="2-player tank duel. Set angle and power, watch the wind, FIRE.">
@@ -9,7 +10,6 @@
 <meta property="og:description" content="2-player tank duel. Set angle and power, watch the wind, FIRE.">
 <meta property="og:image" content="https://mrchumley.github.io/artillery/preview.png">
 <meta property="og:url" content="https://mrchumley.github.io/artillery/">
-<meta charset="utf-8">
 <title>ARTILLERY</title>
 <script src="https://unpkg.com/peerjs@1.5.4/dist/peerjs.min.js"></script>
 <style>
@@ -43,7 +43,7 @@
 </div>
 <div class="row">
   <button id="host">HOST</button>
-  <input id="room" placeholder="room id">
+  <input id="room" placeholder="room or @handle">
   <button id="join">JOIN</button>
   <span id="net">offline</span>
 </div>
@@ -457,6 +457,24 @@ function onNet(data){
 
 function setNet(t){ netEl.textContent=t; }
 
+function shortCode(){
+  const chars='ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
+  let s='';
+  for(let i=0;i<4;i++) s+=chars[Math.floor(Math.random()*chars.length)];
+  return s;
+}
+
+function roomKey(name){
+  const s=String(name||'')
+    .trim()
+    .replace(/^@+/,'')
+    .toLowerCase()
+    .replace(/[^a-z0-9_-]+/g,'-')
+    .replace(/-+/g,'-')
+    .replace(/^-|-$/g,'');
+  return 'mrchumley-artillery-'+(s||'lobby');
+}
+
 function attachConn(c,role){
   conn=c;
   netRole=role;
@@ -474,12 +492,16 @@ function attachConn(c,role){
 }
 
 function hostGame(){
+  let name=roomEl.value.trim();
+  if(!name){
+    name=shortCode();
+    roomEl.value=name;
+  }
   if(peer) try{ peer.destroy(); }catch(e){}
-  peer=new Peer();
+  peer=new Peer(roomKey(name));
   setNet('starting host…');
-  peer.on('open',id=>{
-    roomEl.value=id;
-    setNet('waiting — share id');
+  peer.on('open',()=>{
+    setNet('hosting '+name+' — wait for join');
   });
   peer.on('connection',c=>{
     attachConn(c,'host');
@@ -490,17 +512,20 @@ function hostGame(){
       applyReset(seed);
     });
   });
-  peer.on('error',e=>setNet('error '+e.type));
+  peer.on('error',e=>{
+    if(e.type==='unavailable-id') setNet('name in use — pick another or JOIN');
+    else setNet('error '+e.type);
+  });
 }
 
 function joinGame(){
-  const id=roomEl.value.trim();
-  if(!id){ setNet('paste a room id first'); return; }
+  const name=roomEl.value.trim();
+  if(!name){ setNet('type a room or @handle first'); return; }
   if(peer) try{ peer.destroy(); }catch(e){}
   peer=new Peer();
-  setNet('joining…');
+  setNet('joining '+name+'…');
   peer.on('open',()=>{
-    const c=peer.connect(id);
+    const c=peer.connect(roomKey(name));
     attachConn(c,'guest');
     c.on('open',()=>setNet('connected — you are P2'));
   });
