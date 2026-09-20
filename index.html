@@ -332,13 +332,14 @@ function newWind(){
   windEl.textContent=wind>0?('+'+wind):String(wind);
 }
 
-function startLoveMode(){
+function startLoveMode(fromNet){
   if(!tanks) return;
   lovePending=[true,true];
   tanks.forEach(t=>{
     if(!t.alive) return;
     t.turtle=true;
   });
+  if(!fromNet && conn && conn.open) send({type:'love'});
 }
 
 function finishLoveFiring(){
@@ -434,15 +435,13 @@ function fire(fromNet){
   let a=Number(angEl.value), p=Number(powEl.value);
   a=clamp(a,1,179); p=clamp(p,1,100);
   angEl.value=a; powEl.value=p;
-  if(!fromNet && conn && conn.open) send({type:'fire',turn,a,p});
+  const isLove=!!lovePending[turn];
+  if(isLove) lovePending[turn]=false;
+  if(!fromNet && conn && conn.open) send({type:'fire',turn,a,p,love:isLove});
   const dir=turn===0?1:-1;
   const rad=(turn===0?a:180-a)*Math.PI/180;
   const spd=p*0.22;
-  shot={x:t.x+dir*6,y:t.y-3,vx:Math.cos(rad)*spd,vy:-Math.sin(rad)*spd};
-  if(lovePending[turn]){
-    shot.love=true;
-    lovePending[turn]=false;
-  }
+  shot={x:t.x+dir*6,y:t.y-3,vx:Math.cos(rad)*spd,vy:-Math.sin(rad)*spd,love:isLove};
   fireBtn.disabled=true;
   msg.textContent='Firing...';
   sfxFire();
@@ -713,6 +712,10 @@ function send(obj){ if(conn&&conn.open) conn.send(obj); }
 
 function onNet(data){
   if(!data||!data.type) return;
+  if(data.type==='love'){
+    startLoveMode(true);
+    return;
+  }
   if(data.type==='reset' && typeof data.seed==='number'){
     applyReset(data.seed);
   }
@@ -721,6 +724,7 @@ function onNet(data){
     if(data.turn!==turn) return;
     angEl.value=data.a;
     powEl.value=data.p;
+    if(data.love) lovePending[turn]=true;
     fire(true);
   }
 }
