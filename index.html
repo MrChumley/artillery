@@ -31,6 +31,18 @@
     -webkit-text-size-adjust:100%;
   }
   h1{font-size:18px;letter-spacing:6px;margin:6px 0;font-weight:normal;}
+  .cheat-bang{
+    border:0;
+    background:transparent;
+    color:#6f6;
+    padding:0;
+    margin:0;
+    font:inherit;
+    letter-spacing:0;
+    cursor:default;
+    opacity:.55;
+  }
+  .cheat-bang:focus{outline:none;}
   canvas{
     width:min(640px,100%);
     height:auto;
@@ -60,6 +72,31 @@
   #room{width:140px;}
   #msg,#net{min-height:18px;font-size:13px;text-align:center;}
   #net{opacity:.8;}
+  #wind{
+    display:inline-block;
+    min-width:4ch;
+    text-align:right;
+    font-variant-numeric:tabular-nums;
+  }
+  .msgline{
+    display:flex;
+    align-items:baseline;
+    justify-content:center;
+    gap:0;
+  }
+  .seed-dot{
+    border:0;
+    background:transparent;
+    color:#6f6;
+    padding:0;
+    margin:0;
+    font:inherit;
+    font-size:13px;
+    line-height:1;
+    cursor:default;
+    opacity:.7;
+  }
+  .seed-dot:focus{outline:none;}
   .step{
     display:flex;
     flex-direction:column;
@@ -85,6 +122,11 @@
     touch-action:manipulation;
   }
 
+  @media (min-width:900px) and (min-height:501px){
+    canvas{width:640px;height:400px;max-height:none;}
+    .ui{width:640px;}
+  }
+
   @media (orientation:landscape) and (max-height:500px){
     body{
       flex-direction:row;
@@ -106,13 +148,14 @@
     h1{font-size:14px;letter-spacing:3px;margin:0 0 4px;text-align:center;}
     .row{margin:4px 0;justify-content:flex-start;gap:6px;}
     #msg{text-align:left;font-size:12px;}
+    .msgline{justify-content:flex-start;}
   }
 </style>
 </head>
 <body>
 <canvas id="c" width="320" height="200"></canvas>
 <div class="ui">
-  <h1>ARTILLERY</h1>
+  <h1>ARTILLERY<button type="button" id="cheatBtn" class="cheat-bang">!</button></h1>
   <div class="row">
     P<span id="who">1</span>
     <span class="step">
@@ -141,7 +184,9 @@
     <button id="join">JOIN</button>
     <span id="net">offline</span>
   </div>
-  <div id="msg">Set angle + power, then FIRE (or press Enter).</div>
+  <div class="msgline">
+    <span id="msg">Set angle + power, then FIRE (or press Enter)</span><button type="button" id="seedBtn" class="seed-dot">.</button>
+  </div>
 </div>
 <script>
 const W=320,H=200,G=0.12;
@@ -160,6 +205,8 @@ const netEl=document.getElementById('net');
 let height,tanks,turn,shot,wind,over,particles;
 let peer=null,conn=null,netRole=null,aiTimer=0;
 let ac=null,swiping=false,holdTimer=0;
+let currentSeed=0, pendingSeed=null;
+let lovePending=[false,false];
 
 function rnd(a,b){return a+Math.random()*(b-a);}
 function clamp(v,a,b){return Math.max(a,Math.min(b,v));}
@@ -247,6 +294,13 @@ function sfxGround(){
   tone(70,0.12,'square',0.05,0,28);
 }
 
+function sfxLove(){
+  tone(330,0.10,'square',0.06,0);
+  tone(392,0.10,'square',0.06,0.08);
+  tone(523,0.18,'triangle',0.07,0.16);
+  try{ if(navigator.vibrate) navigator.vibrate([80,40,80,40,180,60,220]); }catch(e){}
+}
+
 function makeTerrain(){
   height=new Float32Array(W);
   let y=H*0.62, dy=0;
@@ -270,15 +324,53 @@ function groundY(x){
 
 function placeTank(x){
   x=clamp(Math.round(x),8,W-9);
-  return {x,y:groundY(x)-4,alive:true};
+  return {x,y:groundY(x)-4,alive:true,turtle:false,loved:false};
 }
 
 function newWind(){
   wind=Math.round(srnd(-18,18));
-  windEl.textContent=(wind>0?'+':'')+wind;
+  windEl.textContent=wind>0?('+'+wind):String(wind);
+}
+
+function startLoveMode(){
+  if(!tanks) return;
+  lovePending=[true,true];
+  tanks.forEach(t=>{
+    if(!t.alive) return;
+    t.turtle=true;
+  });
+}
+
+function finishLoveFiring(){
+  if(lovePending[0]||lovePending[1]) return;
+  let any=false;
+  tanks.forEach(t=>{
+    if(t.loved) any=true;
+    else t.turtle=false;
+  });
+  if(!any){
+    currentSeed=(Math.random()*0xFFFFFFFF)>>>0;
+    pendingSeed=null;
+  }
+}
+
+function heartBoom(x,y){
+  for(let i=0;i<28;i++){
+    particles.push({
+      x,y,
+      vx:rnd(-2.2,2.2),
+      vy:rnd(-3.8,-0.4),
+      life:rnd(22,44),
+      max:44,
+      size:rnd(2.2,4.6),
+      kind:'heart'
+    });
+  }
 }
 
 function applyReset(seed){
+  currentSeed=seed>>>0;
+  lovePending=[false,false];
   clearTimeout(aiTimer);
   setSeed(seed);
   makeTerrain();
@@ -288,14 +380,15 @@ function applyReset(seed){
   who.textContent='1';
   angEl.value=45; powEl.value=50;
   updateControls();
-  msg.textContent='Player 1 — set angle + power, then FIRE.';
+  msg.textContent='Player 1 — set angle + power, then FIRE';
   sfxStart();
   maybeAI();
 }
 
 function reset(){
   audio();
-  const seed=(Math.random()*0xFFFFFFFF)>>>0;
+  const seed=(pendingSeed!=null?pendingSeed:(Math.random()*0xFFFFFFFF))>>>0;
+  pendingSeed=null;
   if(conn&&conn.open) send({type:'reset',seed});
   applyReset(seed);
 }
@@ -346,6 +439,10 @@ function fire(fromNet){
   const rad=(turn===0?a:180-a)*Math.PI/180;
   const spd=p*0.22;
   shot={x:t.x+dir*6,y:t.y-3,vx:Math.cos(rad)*spd,vy:-Math.sin(rad)*spd};
+  if(lovePending[turn]){
+    shot.love=true;
+    lovePending[turn]=false;
+  }
   fireBtn.disabled=true;
   msg.textContent='Firing...';
   sfxFire();
@@ -382,32 +479,73 @@ function stepShot(){
   shot.x+=shot.vx;
   shot.y+=shot.vy;
   if(shot.x<0||shot.x>=W||shot.y>=H){
-    shot=null; endTurn(); return;
+    const wasLove=!!shot.love;
+    shot=null;
+    if(wasLove) finishLoveFiring();
+    endTurn();
+    return;
   }
 
   const victim=hitTank(shot.x,shot.y);
   if(victim!==-1){
+    if(shot.love){
+      if(victim!==turn){
+        tanks[victim].loved=true;
+        tanks[victim].turtle=true;
+        tanks[victim].alive=true;
+        sfxLove();
+        heartBoom(shot.x,shot.y);
+      }
+      shot=null;
+      finishLoveFiring();
+      endTurn();
+      return;
+    }
+    if(tanks[victim].loved){
+      tanks[victim].loved=false;
+      tanks[victim].turtle=false;
+      tanks[victim].alive=true;
+      sfxHit();
+      boom(shot.x,shot.y,true);
+      shot=null;
+      endTurn();
+      return;
+    }
     tanks[victim].alive=false;
     sfxHit();
     boom(shot.x,shot.y,true);
     const winner=(victim===turn)?1-turn:turn;
     shot=null; over=true;
-    msg.textContent='PLAYER '+(winner+1)+' WINS. Press RESET.';
+    msg.textContent='PLAYER '+(winner+1)+' WINS. Press RESET';
     fireBtn.disabled=true;
     return;
   }
 
   if(shot.y>=groundY(shot.x)){
+    if(shot.love){
+      shot=null;
+      finishLoveFiring();
+      endTurn();
+      return;
+    }
     const splash=hitTank(shot.x,shot.y);
     boom(shot.x,shot.y, splash!==-1);
     shot=null;
     if(splash!==-1){
-      tanks[splash].alive=false;
-      sfxHit();
-      const winner=(splash===turn)?1-turn:turn;
-      over=true;
-      msg.textContent='PLAYER '+(winner+1)+' WINS. Press RESET.';
-      fireBtn.disabled=true;
+      if(tanks[splash].loved){
+        tanks[splash].loved=false;
+        tanks[splash].turtle=false;
+        tanks[splash].alive=true;
+        sfxHit();
+        endTurn();
+      } else {
+        tanks[splash].alive=false;
+        sfxHit();
+        const winner=(splash===turn)?1-turn:turn;
+        over=true;
+        msg.textContent='PLAYER '+(winner+1)+' WINS. Press RESET';
+        fireBtn.disabled=true;
+      }
     } else {
       sfxGround();
       endTurn();
@@ -420,14 +558,14 @@ function endTurn(){
   who.textContent=String(turn+1);
   newWind();
   updateControls();
-  msg.textContent='Player '+(turn+1)+' — set angle + power, then FIRE.';
+  msg.textContent='Player '+(turn+1)+' — set angle + power, then FIRE';
   maybeAI();
 }
 
-function simLanding(a,p,who,windVal){
-  const t=tanks[who];
-  const dir=who===0?1:-1;
-  const rad=(who===0?a:180-a)*Math.PI/180;
+function simLanding(a,p,whoTurn,windVal){
+  const t=tanks[whoTurn];
+  const dir=whoTurn===0?1:-1;
+  const rad=(whoTurn===0?a:180-a)*Math.PI/180;
   const spd=p*0.22;
   let x=t.x+dir*6,y=t.y-3,vx=Math.cos(rad)*spd,vy=-Math.sin(rad)*spd;
   for(let i=0;i<400;i++){
@@ -436,7 +574,7 @@ function simLanding(a,p,who,windVal){
     x+=vx; y+=vy;
     if(x<0||x>=W||y>=H) return 9999;
     if(y>=groundY(x)){
-      const enemy=tanks[1-who];
+      const enemy=tanks[1-whoTurn];
       return Math.hypot(x-enemy.x,y-enemy.y);
     }
   }
@@ -464,10 +602,37 @@ function maybeAI(){
   aiTimer=setTimeout(()=>{ aiChoose(); fire(true); },600);
 }
 
+function drawHeart(p){
+  const a=p.life/(p.max||1);
+  const s=p.size;
+  ctx.fillStyle='rgba(255,40,70,'+a+')';
+  ctx.beginPath();
+  ctx.moveTo(p.x,p.y+s);
+  ctx.bezierCurveTo(p.x-s*1.4,p.y,p.x-s,p.y-s,p.x,p.y-s*0.25);
+  ctx.bezierCurveTo(p.x+s,p.y-s,p.x+s*1.4,p.y,p.x,p.y+s);
+  ctx.fill();
+}
+
+function drawTurtle(t,p){
+  const dir=p===0?1:-1;
+  ctx.fillStyle='#c33';
+  ctx.fillRect(t.x-6,t.y-3,12,7);
+  ctx.fillStyle='#912';
+  ctx.fillRect(t.x-4,t.y-2,8,5);
+  ctx.fillStyle='#c33';
+  ctx.fillRect(t.x+dir*6,t.y-1,4,3);
+  ctx.fillRect(t.x-5,t.y+3,3,2);
+  ctx.fillRect(t.x+2,t.y+3,3,2);
+}
+
 function drawTank(t,p){
   if(!t.alive){
     ctx.fillStyle='#363';
     ctx.fillRect(t.x-4,t.y-2,8,4);
+    return;
+  }
+  if(t.turtle){
+    drawTurtle(t,p);
     return;
   }
   ctx.fillStyle=p===0?'#6f6':'#9f6';
@@ -498,10 +663,11 @@ function draw(){
   ctx.stroke();
   tanks.forEach((t,i)=>drawTank(t,i));
   if(shot){
-    ctx.fillStyle='#afa';
+    ctx.fillStyle=shot.love?'#f55':'#afa';
     ctx.fillRect(shot.x-1,shot.y-1,3,3);
   }
   particles.forEach(p=>{
+    if(p.kind==='heart'){ drawHeart(p); return; }
     const t=p.life/(p.max||1);
     if(p.kind==='flash'){
       ctx.fillStyle='rgba(210,255,190,'+(t*0.75)+')';
@@ -523,7 +689,10 @@ function tick(){
   particles=particles.filter(p=>{
     p.x+=p.vx;
     p.y+=p.vy;
-    if(p.kind==='smoke'){
+    if(p.kind==='heart'){
+      p.vx*=0.96;
+      p.vy+=0.02;
+    } else if(p.kind==='smoke'){
       p.vx*=0.94;
       p.vy+=0.015;
       p.size+=0.06;
@@ -705,6 +874,21 @@ fireBtn.onclick=()=>{ audio(); fire(); };
 document.getElementById('reset').onclick=reset;
 document.getElementById('host').onclick=hostGame;
 document.getElementById('join').onclick=joinGame;
+document.getElementById('cheatBtn').onclick=()=>{
+  const v=prompt('Enter Cheatcode','');
+  if(v===null) return;
+  if(/^watch$/i.test(v.trim())) startLoveMode();
+};
+document.getElementById('seedBtn').onclick=()=>{
+  const shown=pendingSeed!=null?pendingSeed:currentSeed;
+  const v=prompt('Seed for next RESET (current '+shown+')', String(shown));
+  if(v===null) return;
+  const s=v.trim();
+  if(!s){ pendingSeed=null; return; }
+  const n=Number(s);
+  if(!Number.isFinite(n)) return;
+  pendingSeed=n>>>0;
+};
 modeEl.onchange=()=>{ updateControls(); maybeAI(); };
 document.addEventListener('keydown',e=>{
   if(e.key==='Enter' && e.target!==roomEl) fire();
