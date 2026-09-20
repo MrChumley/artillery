@@ -344,15 +344,20 @@ function startLoveMode(fromNet){
 
 function finishLoveFiring(){
   if(lovePending[0]||lovePending[1]) return;
-  let any=false;
-  tanks.forEach(t=>{
-    if(t.loved) any=true;
-    else t.turtle=false;
-  });
-  if(!any){
+  tanks.forEach(t=>{ t.turtle=!!t.loved; });
+  if(!tanks[0].loved && !tanks[1].loved){
     currentSeed=(Math.random()*0xFFFFFFFF)>>>0;
     pendingSeed=null;
   }
+}
+
+function applyLoveHit(victim){
+  if(victim<0||victim===turn) return;
+  tanks[victim].loved=true;
+  tanks[victim].turtle=true;
+  tanks[victim].alive=true;
+  sfxLove();
+  heartBoom(shot.x,shot.y);
 }
 
 function heartBoom(x,y){
@@ -488,13 +493,7 @@ function stepShot(){
   const victim=hitTank(shot.x,shot.y);
   if(victim!==-1){
     if(shot.love){
-      if(victim!==turn){
-        tanks[victim].loved=true;
-        tanks[victim].turtle=true;
-        tanks[victim].alive=true;
-        sfxLove();
-        heartBoom(shot.x,shot.y);
-      }
+      applyLoveHit(victim);
       shot=null;
       finishLoveFiring();
       endTurn();
@@ -522,6 +521,7 @@ function stepShot(){
 
   if(shot.y>=groundY(shot.x)){
     if(shot.love){
+      applyLoveHit(hitTank(shot.x,shot.y));
       shot=null;
       finishLoveFiring();
       endTurn();
