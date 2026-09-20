@@ -613,13 +613,24 @@ function drawHeart(p){
 }
 
 function drawTurtle(t,p){
-  const dir=p===0?1:-1;
+  const a=Number(angEl.value)*Math.PI/180;
+  const rad=p===0?a:Math.PI-a;
+  const hx=t.x+Math.cos(rad)*8;
+  const hy=t.y-2-Math.sin(a)*7;
   ctx.fillStyle='#c33';
   ctx.fillRect(t.x-6,t.y-3,12,7);
   ctx.fillStyle='#912';
   ctx.fillRect(t.x-4,t.y-2,8,5);
+  ctx.strokeStyle='#c33';
+  ctx.lineWidth=2;
+  ctx.beginPath();
+  ctx.moveTo(t.x,t.y-1);
+  ctx.lineTo(hx,hy);
+  ctx.stroke();
+  ctx.lineWidth=1;
+  ctx.fillStyle='#e55';
+  ctx.fillRect(Math.round(hx)-2,Math.round(hy)-2,4,4);
   ctx.fillStyle='#c33';
-  ctx.fillRect(t.x+dir*6,t.y-1,4,3);
   ctx.fillRect(t.x-5,t.y+3,3,2);
   ctx.fillRect(t.x+2,t.y+3,3,2);
 }
