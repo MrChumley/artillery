@@ -14,141 +14,33 @@
 <title>ARTILLERY</title>
 <script src="https://unpkg.com/peerjs@1.5.4/dist/peerjs.min.js"></script>
 <style>
-  html,body{
-    margin:0;
-    height:100%;
-    height:100dvh;
-    background:#000;
-    color:#6f6;
-    font-family:"Courier New",monospace;
-    display:flex;
-    flex-direction:column;
-    align-items:center;
-    justify-content:center;
-    overflow:hidden;
-    box-sizing:border-box;
-    padding:max(6px,env(safe-area-inset-top)) max(8px,env(safe-area-inset-right)) max(6px,env(safe-area-inset-bottom)) max(8px,env(safe-area-inset-left));
-    -webkit-text-size-adjust:100%;
-  }
+  html,body{margin:0;height:100%;height:100dvh;background:#000;color:#6f6;font-family:"Courier New",monospace;display:flex;flex-direction:column;align-items:center;justify-content:center;overflow:hidden;box-sizing:border-box;padding:max(6px,env(safe-area-inset-top)) max(8px,env(safe-area-inset-right)) max(6px,env(safe-area-inset-bottom)) max(8px,env(safe-area-inset-left));-webkit-text-size-adjust:100%;}
   h1{font-size:18px;letter-spacing:6px;margin:6px 0;font-weight:normal;}
-  .cheat-bang{
-    border:0;
-    background:transparent;
-    color:#6f6;
-    padding:0;
-    margin:0;
-    font:inherit;
-    letter-spacing:0;
-    cursor:default;
-    opacity:.55;
-  }
+  .cheat-bang{border:0;background:transparent;color:#6f6;padding:0;margin:0;font:inherit;letter-spacing:0;cursor:default;opacity:.55;}
   .cheat-bang:focus{outline:none;}
-  canvas{
-    width:min(640px,100%);
-    height:auto;
-    aspect-ratio:320/200;
-    max-height:calc(100dvh - 10.5rem);
-    border:2px solid #3a3;
-    background:#000;
-    box-shadow:0 0 24px #040;
-    image-rendering:pixelated;
-    image-rendering:crisp-edges;
-    flex:0 0 auto;
-    touch-action:none;
-  }
+  canvas{width:min(640px,100%);height:auto;aspect-ratio:320/200;max-height:calc(100dvh - 10.5rem);border:2px solid #3a3;background:#000;box-shadow:0 0 24px #040;image-rendering:pixelated;image-rendering:crisp-edges;flex:0 0 auto;touch-action:none;}
   .ui{display:flex;flex-direction:column;align-items:center;width:min(640px,100%);}
   .row{margin:6px 0;font-size:14px;display:flex;gap:8px;align-items:center;flex-wrap:wrap;justify-content:center;}
-  input,select,button{
-    background:#000;
-    color:#6f6;
-    border:1px solid #3a3;
-    font-family:inherit;
-    font-size:16px;
-    padding:3px 6px;
-  }
-  button{border-color:#6f6;cursor:pointer;}
-  button:disabled{opacity:.4;cursor:default;}
-  input[type=number]{width:56px;}
-  #room{width:140px;}
-  #msg,#net{min-height:18px;font-size:13px;text-align:center;}
-  #net{opacity:.8;}
-  #wind{
-    display:inline-block;
-    min-width:4ch;
-    text-align:right;
-    font-variant-numeric:tabular-nums;
-  }
-  .msgline{
-    display:flex;
-    align-items:baseline;
-    justify-content:center;
-    gap:0;
-  }
-  .seed-dot{
-    border:0;
-    background:transparent;
-    color:#6f6;
-    padding:0;
-    margin:0;
-    font:inherit;
-    font-size:13px;
-    line-height:1;
-    cursor:default;
-    opacity:.7;
-  }
+  input,select,button{background:#000;color:#6f6;border:1px solid #3a3;font-family:inherit;font-size:16px;padding:3px 6px;}
+  button{border-color:#6f6;cursor:pointer;} button:disabled{opacity:.4;cursor:default;}
+  input[type=number]{width:56px;} #room{width:140px;}
+  #msg,#net{min-height:18px;font-size:13px;text-align:center;} #net{opacity:.8;}
+  #wind{display:inline-block;min-width:4ch;text-align:right;font-variant-numeric:tabular-nums;}
+  .msgline{display:flex;align-items:baseline;justify-content:center;gap:0;}
+  .seed-dot{border:0;background:transparent;color:#6f6;padding:0;margin:0;font:inherit;font-size:13px;line-height:1;cursor:default;opacity:.7;}
   .seed-dot:focus{outline:none;}
-  .step{
-    display:flex;
-    flex-direction:column;
-    align-items:center;
-    gap:3px;
-    font-size:12px;
-  }
-  .step input[type=number]{
-    width:52px;
-    text-align:center;
-    font-size:16px;
-    -moz-appearance:textfield;
-  }
-  .step input[type=number]::-webkit-outer-spin-button,
-  .step input[type=number]::-webkit-inner-spin-button{
-    -webkit-appearance:none;
-    margin:0;
-  }
-  .nudge{
-    width:52px;
-    padding:4px 0;
-    line-height:1;
-    touch-action:manipulation;
-  }
-
-  @media (min-width:900px) and (min-height:501px){
-    canvas{width:640px;height:400px;max-height:none;}
-    .ui{width:640px;}
-  }
-
+  .step{display:flex;flex-direction:column;align-items:center;gap:3px;font-size:12px;}
+  .step input[type=number]{width:52px;text-align:center;font-size:16px;-moz-appearance:textfield;}
+  .step input[type=number]::-webkit-outer-spin-button,.step input[type=number]::-webkit-inner-spin-button{-webkit-appearance:none;margin:0;}
+  .nudge{width:52px;padding:4px 0;line-height:1;touch-action:manipulation;}
+  @media (min-width:900px) and (min-height:501px){canvas{width:640px;height:400px;max-height:none;}.ui{width:640px;}}
   @media (orientation:landscape) and (max-height:500px){
-    body{
-      flex-direction:row;
-      align-items:center;
-      justify-content:center;
-      gap:10px;
-    }
-    canvas{
-      width:auto;
-      height:auto;
-      max-width:calc(100dvw - 16rem);
-      max-height:calc(100dvh - 12px);
-    }
-    .ui{
-      width:min(240px,36vw);
-      align-items:stretch;
-      flex:0 0 auto;
-    }
+    body{flex-direction:row;align-items:center;justify-content:center;gap:10px;}
+    canvas{width:auto;height:auto;max-width:calc(100dvw - 16rem);max-height:calc(100dvh - 12px);}
+    .ui{width:min(240px,36vw);align-items:stretch;flex:0 0 auto;}
     h1{font-size:14px;letter-spacing:3px;margin:0 0 4px;text-align:center;}
     .row{margin:4px 0;justify-content:flex-start;gap:6px;}
-    #msg{text-align:left;font-size:12px;}
-    .msgline{justify-content:flex-start;}
+    #msg{text-align:left;font-size:12px;} .msgline{justify-content:flex-start;}
   }
 </style>
 </head>
@@ -158,14 +50,12 @@
   <h1>ARTILLERY<button type="button" id="cheatBtn" class="cheat-bang">!</button></h1>
   <div class="row">
     P<span id="who">1</span>
-    <span class="step">
-      ANGLE
+    <span class="step">ANGLE
       <button type="button" class="nudge" data-for="ang" data-d="1">▲</button>
       <input id="ang" type="number" value="45" min="1" max="179">
       <button type="button" class="nudge" data-for="ang" data-d="-1">▼</button>
     </span>
-    <span class="step">
-      POWER
+    <span class="step">POWER
       <button type="button" class="nudge" data-for="pow" data-d="1">▲</button>
       <input id="pow" type="number" value="50" min="1" max="100">
       <button type="button" class="nudge" data-for="pow" data-d="-1">▼</button>
@@ -173,10 +63,7 @@
     WIND <span id="wind">0</span>
     <button id="fire">FIRE</button>
     <button id="reset">RESET</button>
-    <select id="mode">
-      <option value="pvp">2P local</option>
-      <option value="cpu">vs CPU</option>
-    </select>
+    <select id="mode"><option value="pvp">2P local</option><option value="cpu">vs CPU</option></select>
   </div>
   <div class="row">
     <button id="host">HOST</button>
@@ -205,192 +92,104 @@ const netEl=document.getElementById('net');
 let height,tanks,turn,shot,wind,over,particles;
 let peer=null,conn=null,netRole=null,aiTimer=0;
 let ac=null,swiping=false,holdTimer=0;
-let currentSeed=0, pendingSeed=null;
-let lovePending=[false,false];
+let currentSeed=0,pendingSeed=null;
+let lovePending=[false,false], loveFired=0;
+let cheekyWho=-1,cheekyUntil=0,cheekyShots=0,cheekyNext=0,cheekyGaveCpu=false;
 
 function rnd(a,b){return a+Math.random()*(b-a);}
 function clamp(v,a,b){return Math.max(a,Math.min(b,v));}
-
-function mulberry32(a){
-  return function(){
-    let t=a+=0x6D2B79F5;
-    t=Math.imul(t^t>>>15,t|1);
-    t^=t+Math.imul(t^t>>>7,t|61);
-    return ((t^t>>>14)>>>0)/4294967296;
-  };
-}
+function mulberry32(a){return function(){let t=a+=0x6D2B79F5;t=Math.imul(t^t>>>15,t|1);t^=t+Math.imul(t^t>>>7,t|61);return ((t^t>>>14)>>>0)/4294967296;};}
 let rng=mulberry32(1);
-function setSeed(s){ rng=mulberry32(s>>>0); }
-function srnd(a,b){ return a+rng()*(b-a); }
+function setSeed(s){rng=mulberry32(s>>>0);}
+function srnd(a,b){return a+rng()*(b-a);}
+function audio(){const AC=window.AudioContext||window.webkitAudioContext;if(!AC)return null;if(!ac)ac=new AC();if(ac.state==='suspended')ac.resume();return ac;}
+function tone(freq,dur,type,vol,when,slide){const a=audio();if(!a)return;const t0=a.currentTime+(when||0);const o=a.createOscillator(),g=a.createGain();o.type=type||'square';o.frequency.setValueAtTime(Math.max(1,freq),t0);if(slide)o.frequency.exponentialRampToValueAtTime(Math.max(1,slide),t0+dur);g.gain.setValueAtTime(vol||0.07,t0);g.gain.exponentialRampToValueAtTime(0.001,t0+dur);o.connect(g);g.connect(a.destination);o.start(t0);o.stop(t0+dur+0.02);}
+function noise(dur,vol,when){const a=audio();if(!a)return;const t0=a.currentTime+(when||0);const n=Math.max(1,Math.floor(a.sampleRate*dur));const buf=a.createBuffer(1,n,a.sampleRate);const d=buf.getChannelData(0);for(let i=0;i<n;i++)d[i]=(Math.random()*2-1)*(1-i/n);const src=a.createBufferSource(),g=a.createGain(),f=a.createBiquadFilter();src.buffer=buf;f.type='lowpass';f.frequency.setValueAtTime(900,t0);f.frequency.exponentialRampToValueAtTime(120,t0+dur);g.gain.setValueAtTime(vol||0.12,t0);g.gain.exponentialRampToValueAtTime(0.001,t0+dur);src.connect(f);f.connect(g);g.connect(a.destination);src.start(t0);src.stop(t0+dur+0.02);}
+function sfxStart(){tone(392,0.07,'square',0.055,0);tone(523,0.07,'square',0.055,0.08);tone(659,0.07,'square',0.055,0.16);tone(784,0.12,'square',0.06,0.24);tone(659,0.06,'square',0.05,0.38);tone(784,0.07,'square',0.055,0.46);tone(784,0.16,'square',0.065,0.55,1047);tone(1047,0.14,'square',0.05,0.73,659);}
+function sfxFire(){tone(160,0.18,'sawtooth',0.07,0,55);noise(0.12,0.08,0);}
+function sfxHit(){noise(0.28,0.18,0);tone(90,0.22,'square',0.08,0,40);try{if(navigator.vibrate)navigator.vibrate([30,40,90]);}catch(e){}}
+function sfxGround(){noise(0.16,0.11,0);tone(70,0.12,'square',0.05,0,28);}
+function sfxLove(){tone(330,0.10,'square',0.06,0);tone(392,0.10,'square',0.06,0.08);tone(523,0.18,'triangle',0.07,0.16);try{if(navigator.vibrate)navigator.vibrate([80,40,80,40,180,60,220]);}catch(e){}}
 
-function audio(){
-  const AC=window.AudioContext||window.webkitAudioContext;
-  if(!AC) return null;
-  if(!ac) ac=new AC();
-  if(ac.state==='suspended') ac.resume();
-  return ac;
-}
-
-function tone(freq,dur,type,vol,when,slide){
-  const a=audio();
-  if(!a) return;
-  const t0=a.currentTime+(when||0);
-  const o=a.createOscillator();
-  const g=a.createGain();
-  o.type=type||'square';
-  o.frequency.setValueAtTime(Math.max(1,freq),t0);
-  if(slide) o.frequency.exponentialRampToValueAtTime(Math.max(1,slide),t0+dur);
-  g.gain.setValueAtTime(vol||0.07,t0);
-  g.gain.exponentialRampToValueAtTime(0.001,t0+dur);
-  o.connect(g); g.connect(a.destination);
-  o.start(t0); o.stop(t0+dur+0.02);
-}
-
-function noise(dur,vol,when){
-  const a=audio();
-  if(!a) return;
-  const t0=a.currentTime+(when||0);
-  const n=Math.max(1,Math.floor(a.sampleRate*dur));
-  const buf=a.createBuffer(1,n,a.sampleRate);
-  const d=buf.getChannelData(0);
-  for(let i=0;i<n;i++) d[i]=(Math.random()*2-1)*(1-i/n);
-  const src=a.createBufferSource();
-  const g=a.createGain();
-  const f=a.createBiquadFilter();
-  src.buffer=buf;
-  f.type='lowpass';
-  f.frequency.setValueAtTime(900,t0);
-  f.frequency.exponentialRampToValueAtTime(120,t0+dur);
-  g.gain.setValueAtTime(vol||0.12,t0);
-  g.gain.exponentialRampToValueAtTime(0.001,t0+dur);
-  src.connect(f); f.connect(g); g.connect(a.destination);
-  src.start(t0); src.stop(t0+dur+0.02);
-}
-
-function sfxStart(){
-  tone(392,0.07,'square',0.055,0);
-  tone(523,0.07,'square',0.055,0.08);
-  tone(659,0.07,'square',0.055,0.16);
-  tone(784,0.12,'square',0.06,0.24);
-  tone(659,0.06,'square',0.05,0.38);
-  tone(784,0.07,'square',0.055,0.46);
-  tone(784,0.16,'square',0.065,0.55,1047);
-  tone(1047,0.14,'square',0.05,0.73,659);
-}
-
-function sfxFire(){
-  tone(160,0.18,'sawtooth',0.07,0,55);
-  noise(0.12,0.08,0);
-}
-
-function sfxHit(){
-  noise(0.28,0.18,0);
-  tone(90,0.22,'square',0.08,0,40);
-  try{ if(navigator.vibrate) navigator.vibrate([30,40,90]); }catch(e){}
-}
-
-function sfxGround(){
-  noise(0.16,0.11,0);
-  tone(70,0.12,'square',0.05,0,28);
-}
-
-function sfxLove(){
-  tone(330,0.10,'square',0.06,0);
-  tone(392,0.10,'square',0.06,0.08);
-  tone(523,0.18,'triangle',0.07,0.16);
-  try{ if(navigator.vibrate) navigator.vibrate([80,40,80,40,180,60,220]); }catch(e){}
-}
-
-function makeTerrain(){
-  height=new Float32Array(W);
-  let y=H*0.62, dy=0;
-  for(let x=0;x<W;x++){
-    dy+=(rng()-0.5)*1.6;
-    dy*=0.92;
-    y=clamp(y+dy,H*0.35,H*0.88);
-    height[x]=y;
-  }
-  for(let k=0;k<8;k++){
-    const tmp=height.slice();
-    for(let x=1;x<W-1;x++) tmp[x]=(height[x-1]+height[x]+height[x+1])/3;
-    height=tmp;
-  }
-}
-
-function groundY(x){
-  x=clamp(Math.round(x),0,W-1);
-  return height[x];
-}
-
-function placeTank(x){
-  x=clamp(Math.round(x),8,W-9);
-  return {x,y:groundY(x)-4,alive:true,turtle:false,loved:false};
-}
-
-function newWind(){
-  wind=Math.round(srnd(-18,18));
-  windEl.textContent=wind>0?('+'+wind):String(wind);
-}
+function makeTerrain(){height=new Float32Array(W);let y=H*0.62,dy=0;for(let x=0;x<W;x++){dy+=(rng()-0.5)*1.6;dy*=0.92;y=clamp(y+dy,H*0.35,H*0.88);height[x]=y;}for(let k=0;k<8;k++){const tmp=height.slice();for(let x=1;x<W-1;x++)tmp[x]=(height[x-1]+height[x]+height[x+1])/3;height=tmp;}}
+function groundY(x){x=clamp(Math.round(x),0,W-1);return height[x];}
+function placeTank(x){x=clamp(Math.round(x),8,W-9);return {x,y:groundY(x)-4,alive:true,turtle:false,loved:false,lives:1,watchPaint:false};}
+function newWind(){wind=Math.round(srnd(-18,18));windEl.textContent=wind>0?('+'+wind):String(wind);}
+function localSeat(){if(netRole==='host')return 0;if(netRole==='guest')return 1;return turn;}
+function cheekyOn(){return cheekyWho>=0 && Date.now()<cheekyUntil;}
+function whoElSync(){who.textContent=String(turn+1);}
+function vsCPU(){return !netRole && modeEl.value==='cpu';}
 
 function startLoveMode(fromNet){
   if(!tanks) return;
   lovePending=[true,true];
-  tanks.forEach(t=>{
-    if(!t.alive) return;
-    t.turtle=true;
-  });
+  loveFired=0;
+  tanks.forEach(t=>{ if(!t.alive) return; t.watchPaint=true; t.turtle=true; });
   if(!fromNet && conn && conn.open) send({type:'love'});
 }
-
-function finishLoveFiring(){
-  if(lovePending[0]||lovePending[1]) return;
-  tanks.forEach(t=>{ t.turtle=!!t.loved; });
-  if(!tanks[0].loved && !tanks[1].loved){
-    currentSeed=(Math.random()*0xFFFFFFFF)>>>0;
-    pendingSeed=null;
-  }
+function endWatchPaint(){
+  lovePending=[false,false];
+  tanks.forEach(t=>{
+    t.watchPaint=false;
+    if(t.loved){ t.turtle=true; t.lives=Math.max(t.lives||1,2); }
+    else { t.turtle=false; if((t.lives||1)<3) t.lives=1; }
+  });
 }
 
-function applyLoveHit(victim){
+function startCheeky(whoSeat, fromNet){
+  if(!tanks||over) return;
+  whoSeat=whoSeat?1:0;
+  cheekyWho=whoSeat;
+  cheekyUntil=Date.now()+30000;
+  cheekyShots=5;
+  cheekyNext=Date.now()+(whoSeat===1&&vsCPU()?1000:0);
+  turn=whoSeat;
+  if(whoSeat===1) cheekyGaveCpu=true;
+  whoElSync();
+  updateControls();
+  if(!fromNet && conn && conn.open) send({type:'cheeky',who:whoSeat});
+}
+function endCheeky(fromNet, passTurn){
+  if(cheekyWho<0) return;
+  const ended=cheekyWho;
+  cheekyWho=-1; cheekyUntil=0; cheekyShots=0; cheekyNext=0;
+  updateControls();
+  if(!fromNet && conn && conn.open) send({type:'cheekyEnd'});
+  if(vsCPU() && ended===0 && !cheekyGaveCpu && !over){
+    startCheeky(1,true);
+    return;
+  }
+  if(passTurn && !over) endTurn();
+}
+function grantLife(i){
+  const t=tanks[i]; if(!t||!t.alive) return t?t.lives:1;
+  t.lives=clamp((t.lives||1)+1,1,5);
+  t.loved=t.lives>=2; t.turtle=t.lives>=2; t.watchPaint=false;
+  return t.lives;
+}
+function applyLoveHit(victim,x,y){
   if(victim<0||victim===turn) return;
-  tanks[victim].loved=true;
-  tanks[victim].turtle=true;
-  tanks[victim].alive=true;
-  sfxLove();
-  heartBoom(shot.x,shot.y);
+  tanks[victim].loved=true; tanks[victim].turtle=true; tanks[victim].alive=true; tanks[victim].watchPaint=false;
+  if((tanks[victim].lives||1)<2) tanks[victim].lives=2;
+  sfxLove(); heartBoom(x,y);
 }
-
 function heartBoom(x,y){
-  for(let i=0;i<28;i++){
-    particles.push({
-      x,y,
-      vx:rnd(-2.2,2.2),
-      vy:rnd(-3.8,-0.4),
-      life:rnd(22,44),
-      max:44,
-      size:rnd(2.2,4.6),
-      kind:'heart'
-    });
-  }
+  for(let i=0;i<28;i++) particles.push({x,y,vx:rnd(-2.2,2.2),vy:rnd(-3.8,-0.4),life:rnd(22,44),max:44,size:rnd(2.2,4.6),kind:'heart'});
 }
 
 function applyReset(seed){
   currentSeed=seed>>>0;
-  lovePending=[false,false];
+  lovePending=[false,false]; loveFired=0;
+  cheekyWho=-1; cheekyUntil=0; cheekyShots=0; cheekyNext=0; cheekyGaveCpu=false;
   clearTimeout(aiTimer);
-  setSeed(seed);
-  makeTerrain();
+  setSeed(seed); makeTerrain();
   tanks=[placeTank(36),placeTank(W-36)];
   turn=0; shot=null; over=false; particles=[];
-  newWind();
-  who.textContent='1';
-  angEl.value=45; powEl.value=50;
+  newWind(); who.textContent='1'; angEl.value=45; powEl.value=50;
   updateControls();
   msg.textContent='Player 1 — set angle + power, then FIRE';
-  sfxStart();
-  maybeAI();
+  sfxStart(); maybeAI();
 }
-
 function reset(){
   audio();
   const seed=(pendingSeed!=null?pendingSeed:(Math.random()*0xFFFFFFFF))>>>0;
@@ -398,519 +197,290 @@ function reset(){
   if(conn&&conn.open) send({type:'reset',seed});
   applyReset(seed);
 }
-
 function crater(cx,cy,r){
   for(let x=Math.floor(cx-r);x<=cx+r;x++){
     if(x<0||x>=W) continue;
-    const dx=x-cx;
-    const drop=Math.sqrt(Math.max(0,r*r-dx*dx))*0.85;
+    const dx=x-cx, drop=Math.sqrt(Math.max(0,r*r-dx*dx))*0.85;
     height[x]=Math.min(H-2,height[x]+drop);
   }
   tanks.forEach(t=>{ if(t.alive) t.y=groundY(t.x)-4; });
 }
-
 function hitTank(px,py){
-  for(let i=0;i<2;i++){
-    const t=tanks[i];
-    if(!t.alive) continue;
-    if(Math.hypot(px-t.x,py-t.y)<6) return i;
-  }
+  for(let i=0;i<2;i++){ const t=tanks[i]; if(!t.alive) continue; if(Math.hypot(px-t.x,py-t.y)<6) return i; }
   return -1;
 }
-
-function vsCPU(){ return !netRole && modeEl.value==='cpu'; }
-
 function canLocalFire(){
   if(over||shot) return false;
+  if(cheekyOn()){
+    if(turn!==cheekyWho||cheekyShots<=0) return false;
+    if(netRole==='host') return cheekyWho===0;
+    if(netRole==='guest') return cheekyWho===1;
+    if(vsCPU() && cheekyWho===1) return false;
+    return true;
+  }
   if(netRole==='host') return turn===0;
   if(netRole==='guest') return turn===1;
   if(vsCPU() && turn===1) return false;
   return true;
 }
-
-function updateControls(){
-  fireBtn.disabled=!canLocalFire();
-}
+function updateControls(){ fireBtn.disabled=!canLocalFire(); }
 
 function fire(fromNet){
   if(over||shot) return;
   if(!fromNet && !canLocalFire()) return;
-  const t=tanks[turn];
-  if(!t||!t.alive) return;
+  const t=tanks[turn]; if(!t||!t.alive) return;
   let a=Number(angEl.value), p=Number(powEl.value);
   a=clamp(a,1,179); p=clamp(p,1,100);
   angEl.value=a; powEl.value=p;
   const isLove=!!lovePending[turn];
-  if(isLove) lovePending[turn]=false;
+  if(isLove){ lovePending[turn]=false; loveFired++; }
+  if(cheekyOn() && turn===cheekyWho) cheekyShots=Math.max(0,cheekyShots-1);
   if(!fromNet && conn && conn.open) send({type:'fire',turn,a,p,love:isLove});
   const dir=turn===0?1:-1;
   const rad=(turn===0?a:180-a)*Math.PI/180;
   const spd=p*0.22;
   shot={x:t.x+dir*6,y:t.y-3,vx:Math.cos(rad)*spd,vy:-Math.sin(rad)*spd,love:isLove};
-  fireBtn.disabled=true;
-  msg.textContent='Firing...';
-  sfxFire();
+  fireBtn.disabled=true; msg.textContent='Firing...'; sfxFire();
 }
 
 function boom(x,y,big){
   crater(x,y, big?18:14);
   const n=big?52:28;
   for(let i=0;i<n;i++){
-    const ang=rnd(0,Math.PI*2);
-    const spd=rnd(0.3, big?4.4:2.6);
-    const life=rnd(12, big?42:26);
-    const smoke=Math.random()<0.4;
-    particles.push({
-      x,y,
-      vx:Math.cos(ang)*spd,
-      vy:Math.sin(ang)*spd-rnd(0.4,2.4),
-      life,max:life,
-      size:smoke?rnd(1.5,3.2):rnd(1, big?3:2),
-      kind:smoke?'smoke':'spark'
-    });
+    const ang=rnd(0,Math.PI*2), spd=rnd(0.3,big?4.4:2.6), life=rnd(12,big?42:26), smoke=Math.random()<0.4;
+    particles.push({x,y,vx:Math.cos(ang)*spd,vy:Math.sin(ang)*spd-rnd(0.4,2.4),life,max:life,size:smoke?rnd(1.5,3.2):rnd(1,big?3:2),kind:smoke?'smoke':'spark'});
   }
-  particles.push({
-    x,y,vx:0,vy:0,
-    life:7,max:7,
-    size:big?18:11,
-    kind:'flash'
-  });
+  particles.push({x,y,vx:0,vy:0,life:7,max:7,size:big?18:11,kind:'flash'});
 }
-
+function afterCheekyMiss(){
+  if(cheekyOn() && cheekyShots>0){ cheekyNext=Date.now()+5000; updateControls(); return; }
+  if(cheekyWho>=0) endCheeky(false,true); else endTurn();
+}
+function afterCheekyHit(victim,x,y){
+  const lv=grantLife(victim); sfxLove(); heartBoom(x,y);
+  if(lv>=5){ endCheeky(false,true); return; }
+  startCheeky(victim,true);
+}
 function stepShot(){
-  shot.vx+=wind*0.0016;
-  shot.vy+=G;
-  shot.x+=shot.vx;
-  shot.y+=shot.vy;
+  shot.vx+=wind*0.0016; shot.vy+=G; shot.x+=shot.vx; shot.y+=shot.vy;
   if(shot.x<0||shot.x>=W||shot.y>=H){
-    const wasLove=!!shot.love;
-    shot=null;
-    if(wasLove) finishLoveFiring();
-    endTurn();
+    const wasLove=!!shot.love; shot=null;
+    if(wasLove && loveFired>=2) endWatchPaint();
+    if(cheekyWho>=0) afterCheekyMiss(); else endTurn();
     return;
   }
-
   const victim=hitTank(shot.x,shot.y);
   if(victim!==-1){
-    if(shot.love){
-      applyLoveHit(victim);
-      shot=null;
-      finishLoveFiring();
-      endTurn();
-      return;
+    const hx=shot.x,hy=shot.y,wasLove=!!shot.love; shot=null;
+    if(wasLove){ applyLoveHit(victim,hx,hy); if(loveFired>=2) endWatchPaint(); endTurn(); return; }
+    if(cheekyOn() && victim!==turn){ afterCheekyHit(victim,hx,hy); return; }
+    if(tanks[victim].loved || (tanks[victim].lives||1)>1){
+      tanks[victim].lives=Math.max(1,(tanks[victim].lives||2)-1);
+      tanks[victim].loved=(tanks[victim].lives||1)>=2;
+      tanks[victim].turtle=(tanks[victim].lives||1)>=2;
+      tanks[victim].alive=true; sfxHit(); boom(hx,hy,true); endTurn(); return;
     }
-    if(tanks[victim].loved){
-      tanks[victim].loved=false;
-      tanks[victim].turtle=false;
-      tanks[victim].alive=true;
-      sfxHit();
-      boom(shot.x,shot.y,true);
-      shot=null;
-      endTurn();
-      return;
-    }
-    tanks[victim].alive=false;
-    sfxHit();
-    boom(shot.x,shot.y,true);
-    const winner=(victim===turn)?1-turn:turn;
-    shot=null; over=true;
-    msg.textContent='PLAYER '+(winner+1)+' WINS. Press RESET';
-    fireBtn.disabled=true;
-    return;
+    tanks[victim].alive=false; sfxHit(); boom(hx,hy,true); over=true;
+    msg.textContent='PLAYER '+(((victim===turn)?1-turn:turn)+1)+' WINS. Press RESET';
+    fireBtn.disabled=true; return;
   }
-
   if(shot.y>=groundY(shot.x)){
-    if(shot.love){
-      applyLoveHit(hitTank(shot.x,shot.y));
-      shot=null;
-      finishLoveFiring();
-      endTurn();
-      return;
-    }
-    const splash=hitTank(shot.x,shot.y);
-    boom(shot.x,shot.y, splash!==-1);
-    shot=null;
+    const hx=shot.x,hy=shot.y,wasLove=!!shot.love,splash=hitTank(hx,hy); shot=null;
+    if(wasLove){ applyLoveHit(splash,hx,hy); if(loveFired>=2) endWatchPaint(); endTurn(); return; }
+    if(cheekyOn() && splash!==-1 && splash!==turn){ afterCheekyHit(splash,hx,hy); return; }
+    boom(hx,hy,splash!==-1);
     if(splash!==-1){
-      if(tanks[splash].loved){
-        tanks[splash].loved=false;
-        tanks[splash].turtle=false;
-        tanks[splash].alive=true;
-        sfxHit();
-        endTurn();
+      if(tanks[splash].loved || (tanks[splash].lives||1)>1){
+        tanks[splash].lives=Math.max(1,(tanks[splash].lives||2)-1);
+        tanks[splash].loved=(tanks[splash].lives||1)>=2;
+        tanks[splash].turtle=(tanks[splash].lives||1)>=2;
+        tanks[splash].alive=true; sfxHit(); endTurn();
       } else {
-        tanks[splash].alive=false;
-        sfxHit();
-        const winner=(splash===turn)?1-turn:turn;
-        over=true;
-        msg.textContent='PLAYER '+(winner+1)+' WINS. Press RESET';
+        tanks[splash].alive=false; sfxHit(); over=true;
+        msg.textContent='PLAYER '+(((splash===turn)?1-turn:turn)+1)+' WINS. Press RESET';
         fireBtn.disabled=true;
       }
     } else {
       sfxGround();
-      endTurn();
+      if(cheekyWho>=0) afterCheekyMiss(); else endTurn();
     }
   }
 }
-
 function endTurn(){
-  turn=1-turn;
-  who.textContent=String(turn+1);
-  newWind();
+  turn=1-turn; whoElSync(); newWind();
+  if(loveFired>=2) endWatchPaint();
   updateControls();
   msg.textContent='Player '+(turn+1)+' — set angle + power, then FIRE';
   maybeAI();
 }
-
 function simLanding(a,p,whoTurn,windVal){
-  const t=tanks[whoTurn];
-  const dir=whoTurn===0?1:-1;
-  const rad=(whoTurn===0?a:180-a)*Math.PI/180;
-  const spd=p*0.22;
+  const t=tanks[whoTurn], dir=whoTurn===0?1:-1, rad=(whoTurn===0?a:180-a)*Math.PI/180, spd=p*0.22;
   let x=t.x+dir*6,y=t.y-3,vx=Math.cos(rad)*spd,vy=-Math.sin(rad)*spd;
   for(let i=0;i<400;i++){
-    vx+=windVal*0.0016;
-    vy+=G;
-    x+=vx; y+=vy;
+    vx+=windVal*0.0016; vy+=G; x+=vx; y+=vy;
     if(x<0||x>=W||y>=H) return 9999;
-    if(y>=groundY(x)){
-      const enemy=tanks[1-whoTurn];
-      return Math.hypot(x-enemy.x,y-enemy.y);
-    }
+    if(y>=groundY(x)) return Math.hypot(x-tanks[1-whoTurn].x,y-tanks[1-whoTurn].y);
   }
   return 9999;
 }
-
 function aiChoose(){
   let best={a:45,p:50,d:1e9};
-  for(let a=15;a<=80;a+=3){
-    for(let p=25;p<=95;p+=5){
-      const d=simLanding(a,p,turn,wind);
-      if(d<best.d) best={a,p,d};
-    }
-  }
+  for(let a=15;a<=80;a+=3) for(let p=25;p<=95;p+=5){ const d=simLanding(a,p,turn,wind); if(d<best.d) best={a,p,d}; }
   angEl.value=clamp(best.a+rnd(-4,4),1,179);
   powEl.value=clamp(best.p+rnd(-8,8),1,100);
 }
-
 function maybeAI(){
   clearTimeout(aiTimer);
   if(!vsCPU()||over||shot) return;
+  if(cheekyOn()) return;
   if(turn!==1) return;
-  fireBtn.disabled=true;
-  msg.textContent='CPU aiming...';
+  fireBtn.disabled=true; msg.textContent='CPU aiming...';
   aiTimer=setTimeout(()=>{ aiChoose(); fire(true); },600);
 }
 
-function drawHeart(p){
-  const a=p.life/(p.max||1);
-  const s=p.size;
-  ctx.fillStyle='rgba(255,40,70,'+a+')';
-  ctx.beginPath();
-  ctx.moveTo(p.x,p.y+s);
-  ctx.bezierCurveTo(p.x-s*1.4,p.y,p.x-s,p.y-s,p.x,p.y-s*0.25);
-  ctx.bezierCurveTo(p.x+s,p.y-s,p.x+s*1.4,p.y,p.x,p.y+s);
-  ctx.fill();
+function drawHeart(p){const a=p.life/(p.max||1),s=p.size;ctx.fillStyle='rgba(255,40,70,'+a+')';ctx.beginPath();ctx.moveTo(p.x,p.y+s);ctx.bezierCurveTo(p.x-s*1.4,p.y,p.x-s,p.y-s,p.x,p.y-s*0.25);ctx.bezierCurveTo(p.x+s,p.y-s,p.x+s*1.4,p.y,p.x,p.y+s);ctx.fill();}
+function turtleColors(t,p){
+  if(cheekyOn() && p===cheekyWho){const cols=['#f33','#f80','#ff2','#3f3','#2ee','#36f','#a3f'];return {shell:cols[Math.floor(Date.now()/70)%cols.length],inner:'#000',head:'#fff'};}
+  const lv=t.lives||1;
+  if(lv>=5) return {shell:'#24f',inner:'#014',head:'#8af'};
+  if(lv>=4) return {shell:'#1dd',inner:'#066',head:'#cff'};
+  if(lv>=3) return {shell:'#dd2',inner:'#770',head:'#ff8'};
+  return {shell:'#c33',inner:'#912',head:'#e55'};
 }
-
 function drawTurtle(t,p){
-  const a=Number(angEl.value)*Math.PI/180;
-  const rad=p===0?a:Math.PI-a;
-  const hx=t.x+Math.cos(rad)*8;
-  const hy=t.y-2-Math.sin(a)*7;
-  ctx.fillStyle='#c33';
-  ctx.fillRect(t.x-6,t.y-3,12,7);
-  ctx.fillStyle='#912';
-  ctx.fillRect(t.x-4,t.y-2,8,5);
-  ctx.strokeStyle='#c33';
-  ctx.lineWidth=2;
-  ctx.beginPath();
-  ctx.moveTo(t.x,t.y-1);
-  ctx.lineTo(hx,hy);
-  ctx.stroke();
-  ctx.lineWidth=1;
-  ctx.fillStyle='#e55';
-  ctx.fillRect(Math.round(hx)-2,Math.round(hy)-2,4,4);
-  ctx.fillStyle='#c33';
-  ctx.fillRect(t.x-5,t.y+3,3,2);
-  ctx.fillRect(t.x+2,t.y+3,3,2);
+  const a=Number(angEl.value)*Math.PI/180, rad=p===0?a:Math.PI-a;
+  const hx=t.x+Math.cos(rad)*8, hy=t.y-2-Math.sin(a)*7, col=turtleColors(t,p);
+  ctx.fillStyle=col.shell; ctx.fillRect(t.x-6,t.y-3,12,7);
+  ctx.fillStyle=col.inner; ctx.fillRect(t.x-4,t.y-2,8,5);
+  ctx.strokeStyle=col.shell; ctx.lineWidth=2; ctx.beginPath(); ctx.moveTo(t.x,t.y-1); ctx.lineTo(hx,hy); ctx.stroke(); ctx.lineWidth=1;
+  ctx.fillStyle=col.head; ctx.fillRect(Math.round(hx)-2,Math.round(hy)-2,4,4);
+  ctx.fillStyle=col.shell; ctx.fillRect(t.x-5,t.y+3,3,2); ctx.fillRect(t.x+2,t.y+3,3,2);
 }
-
 function drawTank(t,p){
-  if(!t.alive){
-    ctx.fillStyle='#363';
-    ctx.fillRect(t.x-4,t.y-2,8,4);
-    return;
-  }
-  if(t.turtle){
-    drawTurtle(t,p);
-    return;
-  }
+  if(!t.alive){ ctx.fillStyle='#363'; ctx.fillRect(t.x-4,t.y-2,8,4); return; }
+  if(t.watchPaint || t.turtle || (t.lives||1)>=2 || (cheekyOn()&&p===cheekyWho)){ drawTurtle(t,p); return; }
   ctx.fillStyle=p===0?'#6f6':'#9f6';
-  ctx.fillRect(t.x-5,t.y-3,10,6);
-  ctx.fillRect(t.x-2,t.y-6,4,3);
-  const a=Number(angEl.value)*Math.PI/180;
-  const dir=p===0?1:-1;
-  const rad=p===0?a:Math.PI-a;
-  ctx.beginPath();
-  ctx.moveTo(t.x,t.y-4);
-  ctx.lineTo(t.x+Math.cos(rad)*10*dir/dir,t.y-4-Math.sin(a)*8);
-  ctx.strokeStyle='#6f6';
-  ctx.stroke();
+  ctx.fillRect(t.x-5,t.y-3,10,6); ctx.fillRect(t.x-2,t.y-6,4,3);
+  const a=Number(angEl.value)*Math.PI/180, rad=p===0?a:Math.PI-a;
+  ctx.beginPath(); ctx.moveTo(t.x,t.y-4); ctx.lineTo(t.x+Math.cos(rad)*10,t.y-4-Math.sin(a)*8); ctx.strokeStyle='#6f6'; ctx.stroke();
 }
-
 function draw(){
-  ctx.fillStyle='#000';
-  ctx.fillRect(0,0,W,H);
-  ctx.fillStyle='#030';
-  ctx.beginPath();
-  ctx.moveTo(0,H);
-  for(let x=0;x<W;x++) ctx.lineTo(x,height[x]);
-  ctx.lineTo(W,H);
-  ctx.fill();
-  ctx.strokeStyle='#3a3';
-  ctx.beginPath();
-  for(let x=0;x<W;x++) x===0?ctx.moveTo(x,height[x]):ctx.lineTo(x,height[x]);
-  ctx.stroke();
+  ctx.fillStyle='#000'; ctx.fillRect(0,0,W,H);
+  ctx.fillStyle='#030'; ctx.beginPath(); ctx.moveTo(0,H);
+  for(let x=0;x<W;x++) ctx.lineTo(x,height[x]); ctx.lineTo(W,H); ctx.fill();
+  ctx.strokeStyle='#3a3'; ctx.beginPath();
+  for(let x=0;x<W;x++) x===0?ctx.moveTo(x,height[x]):ctx.lineTo(x,height[x]); ctx.stroke();
   tanks.forEach((t,i)=>drawTank(t,i));
-  if(shot){
-    ctx.fillStyle=shot.love?'#f55':'#afa';
-    ctx.fillRect(shot.x-1,shot.y-1,3,3);
-  }
+  if(shot){ ctx.fillStyle=shot.love?'#f55':'#afa'; ctx.fillRect(shot.x-1,shot.y-1,3,3); }
   particles.forEach(p=>{
     if(p.kind==='heart'){ drawHeart(p); return; }
     const t=p.life/(p.max||1);
-    if(p.kind==='flash'){
-      ctx.fillStyle='rgba(210,255,190,'+(t*0.75)+')';
-      ctx.beginPath();
-      ctx.arc(p.x,p.y,Math.max(1,p.size),0,Math.PI*2);
-      ctx.fill();
-    } else if(p.kind==='smoke'){
-      ctx.fillStyle='rgba(50,90,50,'+(t*0.4)+')';
-      ctx.fillRect(p.x-p.size/2,p.y-p.size/2,p.size,p.size);
-    } else {
-      ctx.fillStyle=t>0.65?'#efa':t>0.3?'#6f6':'#363';
-      ctx.fillRect(p.x,p.y,p.size,p.size);
-    }
+    if(p.kind==='flash'){ ctx.fillStyle='rgba(210,255,190,'+(t*0.75)+')'; ctx.beginPath(); ctx.arc(p.x,p.y,Math.max(1,p.size),0,Math.PI*2); ctx.fill(); }
+    else if(p.kind==='smoke'){ ctx.fillStyle='rgba(50,90,50,'+(t*0.4)+')'; ctx.fillRect(p.x-p.size/2,p.y-p.size/2,p.size,p.size); }
+    else { ctx.fillStyle=t>0.65?'#efa':t>0.3?'#6f6':'#363'; ctx.fillRect(p.x,p.y,p.size,p.size); }
   });
 }
-
 function tick(){
+  if(loveFired>=2 && !shot) endWatchPaint();
+  if(cheekyWho>=0 && Date.now()>=cheekyUntil && !shot) endCheeky(false,true);
+  if(vsCPU() && cheekyOn() && cheekyWho===1 && turn===1 && !shot && !over && cheekyShots>0 && Date.now()>=cheekyNext){
+    cheekyNext=Date.now()+5000;
+    msg.textContent='CPU aiming...';
+    aiChoose();
+    fire(true);
+  }
   if(shot) stepShot();
   particles=particles.filter(p=>{
-    p.x+=p.vx;
-    p.y+=p.vy;
-    if(p.kind==='heart'){
-      p.vx*=0.96;
-      p.vy+=0.02;
-    } else if(p.kind==='smoke'){
-      p.vx*=0.94;
-      p.vy+=0.015;
-      p.size+=0.06;
-    } else if(p.kind==='flash'){
-      p.size*=0.78;
-    } else {
-      p.vx*=0.99;
-      p.vy+=0.09;
-    }
-    p.life--;
-    return p.life>0;
+    p.x+=p.vx; p.y+=p.vy;
+    if(p.kind==='heart'){ p.vx*=0.96; p.vy+=0.02; }
+    else if(p.kind==='smoke'){ p.vx*=0.94; p.vy+=0.015; p.size+=0.06; }
+    else if(p.kind==='flash') p.size*=0.78;
+    else { p.vx*=0.99; p.vy+=0.09; }
+    p.life--; return p.life>0;
   });
   draw();
   requestAnimationFrame(tick);
 }
 
 function send(obj){ if(conn&&conn.open) conn.send(obj); }
-
 function onNet(data){
   if(!data||!data.type) return;
-  if(data.type==='love'){
-    startLoveMode(true);
-    return;
-  }
-  if(data.type==='reset' && typeof data.seed==='number'){
-    applyReset(data.seed);
-  }
+  if(data.type==='love'){ startLoveMode(true); return; }
+  if(data.type==='cheeky' && typeof data.who==='number'){ startCheeky(data.who,true); return; }
+  if(data.type==='cheekyEnd'){ endCheeky(true,true); return; }
+  if(data.type==='reset' && typeof data.seed==='number') applyReset(data.seed);
   if(data.type==='fire'){
-    if(shot||over) return;
-    if(data.turn!==turn) return;
-    angEl.value=data.a;
-    powEl.value=data.p;
-    if(data.love) lovePending[turn]=true;
-    fire(true);
+    if(shot||over) return; if(data.turn!==turn) return;
+    angEl.value=data.a; powEl.value=data.p; if(data.love) lovePending[turn]=true; fire(true);
   }
 }
-
 function setNet(t){ netEl.textContent=t; }
-
-function shortCode(){
-  const chars='ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
-  let s='';
-  for(let i=0;i<4;i++) s+=chars[Math.floor(Math.random()*chars.length)];
-  return s;
-}
-
-function roomKey(name){
-  const s=String(name||'')
-    .trim()
-    .replace(/^@+/,'')
-    .toLowerCase()
-    .replace(/[^a-z0-9_-]+/g,'-')
-    .replace(/-+/g,'-')
-    .replace(/^-|-$/g,'');
-  return 'mrchumley-artillery-'+(s||'lobby');
-}
-
+function shortCode(){const chars='ABCDEFGHJKLMNPQRSTUVWXYZ23456789';let s='';for(let i=0;i<4;i++)s+=chars[Math.floor(Math.random()*chars.length)];return s;}
+function roomKey(name){const s=String(name||'').trim().replace(/^@+/,'').toLowerCase().replace(/[^a-z0-9_-]+/g,'-').replace(/-+/g,'-').replace(/^-|-$/g,'');return 'mrchumley-artillery-'+(s||'lobby');}
 function attachConn(c,role){
-  conn=c;
-  netRole=role;
-  modeEl.value='pvp';
-  modeEl.disabled=true;
+  conn=c; netRole=role; modeEl.value='pvp'; modeEl.disabled=true;
   c.on('data',onNet);
-  c.on('close',()=>{
-    setNet('disconnected');
-    netRole=null;
-    conn=null;
-    modeEl.disabled=false;
-    updateControls();
-  });
+  c.on('close',()=>{ setNet('disconnected'); netRole=null; conn=null; modeEl.disabled=false; updateControls(); });
   c.on('error',()=>setNet('link error'));
 }
-
 function hostGame(){
-  let name=roomEl.value.trim();
-  if(!name){
-    name=shortCode();
-    roomEl.value=name;
-  }
+  let name=roomEl.value.trim(); if(!name){ name=shortCode(); roomEl.value=name; }
   if(peer) try{ peer.destroy(); }catch(e){}
-  peer=new Peer(roomKey(name));
-  setNet('starting host…');
-  peer.on('open',()=>{
-    setNet('hosting '+name+' — wait for join');
-  });
+  peer=new Peer(roomKey(name)); setNet('starting host…');
+  peer.on('open',()=>setNet('hosting '+name+' — wait for join'));
   peer.on('connection',c=>{
     attachConn(c,'host');
-    c.on('open',()=>{
-      setNet('guest connected — you are P1');
-      const seed=(Math.random()*0xFFFFFFFF)>>>0;
-      send({type:'reset',seed});
-      applyReset(seed);
-    });
+    c.on('open',()=>{ setNet('guest connected — you are P1'); const seed=(Math.random()*0xFFFFFFFF)>>>0; send({type:'reset',seed}); applyReset(seed); });
   });
-  peer.on('error',e=>{
-    if(e.type==='unavailable-id') setNet('name in use — pick another or JOIN');
-    else setNet('error '+e.type);
-  });
+  peer.on('error',e=>setNet(e.type==='unavailable-id'?'name in use — pick another or JOIN':'error '+e.type));
 }
-
 function joinGame(){
-  const name=roomEl.value.trim();
-  if(!name){ setNet('type a room or @handle first'); return; }
+  const name=roomEl.value.trim(); if(!name){ setNet('type a room or @handle first'); return; }
   if(peer) try{ peer.destroy(); }catch(e){}
-  peer=new Peer();
-  setNet('joining '+name+'…');
-  peer.on('open',()=>{
-    const c=peer.connect(roomKey(name));
-    attachConn(c,'guest');
-    c.on('open',()=>setNet('connected — you are P2'));
-  });
+  peer=new Peer(); setNet('joining '+name+'…');
+  peer.on('open',()=>{ const c=peer.connect(roomKey(name)); attachConn(c,'guest'); c.on('open',()=>setNet('connected — you are P2')); });
   peer.on('error',e=>setNet('error '+e.type));
 }
-
-function nudge(id,d){
-  const el=id==='ang'?angEl:powEl;
-  const min=Number(el.min), max=Number(el.max);
-  el.value=clamp(Number(el.value||0)+d, min, max);
-}
-function startNudge(id,d){
-  nudge(id,d);
-  clearTimeout(holdTimer);
-  holdTimer=setTimeout(function tickNudge(){
-    nudge(id,d);
-    holdTimer=setTimeout(tickNudge,70);
-  },280);
-}
-function stopNudge(){ clearTimeout(holdTimer); }
-
+function nudge(id,d){const el=id==='ang'?angEl:powEl;el.value=clamp(Number(el.value||0)+d,Number(el.min),Number(el.max));}
+function startNudge(id,d){nudge(id,d);clearTimeout(holdTimer);holdTimer=setTimeout(function tickNudge(){nudge(id,d);holdTimer=setTimeout(tickNudge,70);},280);}
+function stopNudge(){clearTimeout(holdTimer);}
 document.querySelectorAll('.nudge').forEach(btn=>{
-  const id=btn.dataset.for;
-  const d=Number(btn.dataset.d);
-  btn.addEventListener('pointerdown',e=>{
-    e.preventDefault();
-    btn.setPointerCapture(e.pointerId);
-    startNudge(id,d);
-  });
-  btn.addEventListener('pointerup',stopNudge);
-  btn.addEventListener('pointercancel',stopNudge);
-  btn.addEventListener('lostpointercapture',stopNudge);
+  const id=btn.dataset.for,d=Number(btn.dataset.d);
+  btn.addEventListener('pointerdown',e=>{e.preventDefault();btn.setPointerCapture(e.pointerId);startNudge(id,d);});
+  btn.addEventListener('pointerup',stopNudge); btn.addEventListener('pointercancel',stopNudge); btn.addEventListener('lostpointercapture',stopNudge);
 });
-
-function canvasPos(e){
-  const r=canvas.getBoundingClientRect();
-  return {
-    x:(e.clientX-r.left)*(W/r.width),
-    y:(e.clientY-r.top)*(H/r.height)
-  };
-}
+function canvasPos(e){const r=canvas.getBoundingClientRect();return {x:(e.clientX-r.left)*(W/r.width),y:(e.clientY-r.top)*(H/r.height)};}
 function aimFromPoint(x,y){
-  if(!canLocalFire()) return;
-  const t=tanks[turn];
-  if(!t||!t.alive) return;
-  const dx=x-t.x;
-  const dy=t.y-y;
-  const a=turn===0
-    ? Math.atan2(dy,dx)*180/Math.PI
-    : Math.atan2(dy,-dx)*180/Math.PI;
+  if(!canLocalFire()) return; const t=tanks[turn]; if(!t||!t.alive) return;
+  const dx=x-t.x,dy=t.y-y;
+  const a=turn===0?Math.atan2(dy,dx)*180/Math.PI:Math.atan2(dy,-dx)*180/Math.PI;
   angEl.value=clamp(Math.round(a),1,179);
-  const dist=Math.hypot(dx,dy);
-  powEl.value=clamp(Math.round(dist*30/(W/2)),1,50);
+  powEl.value=clamp(Math.round(Math.hypot(dx,dy)*30/(W/2)),1,50);
 }
-function endSwipe(){ swiping=false; }
-
-canvas.addEventListener('pointerdown',e=>{
-  if(!canLocalFire()) return;
-  e.preventDefault();
-  swiping=true;
-  canvas.setPointerCapture(e.pointerId);
-  const p=canvasPos(e);
-  aimFromPoint(p.x,p.y);
-});
-canvas.addEventListener('pointermove',e=>{
-  if(!swiping) return;
-  e.preventDefault();
-  const p=canvasPos(e);
-  aimFromPoint(p.x,p.y);
-});
-canvas.addEventListener('pointerup',endSwipe);
-canvas.addEventListener('pointercancel',endSwipe);
-canvas.addEventListener('lostpointercapture',endSwipe);
+function endSwipe(){swiping=false;}
+canvas.addEventListener('pointerdown',e=>{if(!canLocalFire())return;e.preventDefault();swiping=true;canvas.setPointerCapture(e.pointerId);const p=canvasPos(e);aimFromPoint(p.x,p.y);});
+canvas.addEventListener('pointermove',e=>{if(!swiping)return;e.preventDefault();const p=canvasPos(e);aimFromPoint(p.x,p.y);});
+canvas.addEventListener('pointerup',endSwipe); canvas.addEventListener('pointercancel',endSwipe); canvas.addEventListener('lostpointercapture',endSwipe);
 
 fireBtn.onclick=()=>{ audio(); fire(); };
 document.getElementById('reset').onclick=reset;
 document.getElementById('host').onclick=hostGame;
 document.getElementById('join').onclick=joinGame;
 document.getElementById('cheatBtn').onclick=()=>{
-  const v=prompt('Enter Cheatcode','');
-  if(v===null) return;
-  if(/^watch$/i.test(v.trim())) startLoveMode();
+  const v=prompt('Enter Cheatcode',''); if(v===null) return;
+  const s=v.trim();
+  if(/^watch$/i.test(s)) startLoveMode();
+  if(/^turtle$/i.test(s)){ cheekyGaveCpu=false; startCheeky(localSeat()); }
 };
 document.getElementById('seedBtn').onclick=()=>{
   const shown=pendingSeed!=null?pendingSeed:currentSeed;
   const v=prompt('Seed for next RESET (current '+shown+')', String(shown));
-  if(v===null) return;
-  const s=v.trim();
-  if(!s){ pendingSeed=null; return; }
-  const n=Number(s);
-  if(!Number.isFinite(n)) return;
-  pendingSeed=n>>>0;
+  if(v===null) return; const s=v.trim(); if(!s){ pendingSeed=null; return; }
+  const n=Number(s); if(!Number.isFinite(n)) return; pendingSeed=n>>>0;
 };
 modeEl.onchange=()=>{ updateControls(); maybeAI(); };
-document.addEventListener('keydown',e=>{
-  if(e.key==='Enter' && e.target!==roomEl) fire();
-});
-
-reset();
-tick();
+document.addEventListener('keydown',e=>{ if(e.key==='Enter' && e.target!==roomEl) fire(); });
+reset(); tick();
 </script>
 </body>
 </html>
