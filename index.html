@@ -151,8 +151,12 @@ function startCheeky(whoSeat, fromNet){
 }
 function endCheeky(fromNet, passTurn){
   if(cheekyWho<0) return;
+  if(netRole==='guest' && !fromNet) return;
   const ended=cheekyWho;
-  cheekyWho=-1; cheekyUntil=0; cheekyShots=0; cheekyNext=0;
+  cheekyWho=-1;
+  cheekyUntil=0;
+  cheekyShots=0;
+  cheekyNext=0;
   updateControls();
   if(!fromNet && conn && conn.open) send({type:'cheekyEnd'});
   if(vsCPU() && ended===0 && !cheekyGaveCpu && !over){
@@ -234,8 +238,8 @@ function fire(fromNet){
   angEl.value=a; powEl.value=p;
   const isLove=!!lovePending[turn];
   if(isLove){ lovePending[turn]=false; loveFired++; }
-  if(cheekyOn() && turn===cheekyWho) cheekyShots=Math.max(0,cheekyShots-1);
-  if(!fromNet && conn && conn.open) send({type:'fire',turn,a,p,love:isLove});
+  if(!fromNet && cheekyOn() && turn===cheekyWho) cheekyShots=Math.max(0,cheekyShots-1);
+  if(!fromNet && conn && conn.open) send({type:'fire',turn,a,p,love:isLove,cheekyWho,cheekyShots});
   const dir=turn===0?1:-1;
   const rad=(turn===0?a:180-a)*Math.PI/180;
   const spd=p*0.22;
@@ -382,7 +386,9 @@ function draw(){
 }
 function tick(){
   if(loveFired>=2 && !shot) endWatchPaint();
-  if(cheekyWho>=0 && Date.now()>=cheekyUntil && !shot) endCheeky(false,true);
+  if(cheekyWho>=0 && Date.now()>=cheekyUntil && !shot){
+    if(netRole!=='guest') endCheeky(false,true);
+  }
   if(vsCPU() && cheekyOn() && cheekyWho===1 && turn===1 && !shot && !over && cheekyShots>0 && Date.now()>=cheekyNext){
     cheekyNext=Date.now()+5000;
     msg.textContent='CPU aiming...';
@@ -410,8 +416,14 @@ function onNet(data){
   if(data.type==='cheekyEnd'){ endCheeky(true,true); return; }
   if(data.type==='reset' && typeof data.seed==='number') applyReset(data.seed);
   if(data.type==='fire'){
-    if(shot||over) return; if(data.turn!==turn) return;
-    angEl.value=data.a; powEl.value=data.p; if(data.love) lovePending[turn]=true; fire(true);
+    if(shot||over) return;
+    if(data.turn!==turn) return;
+    angEl.value=data.a;
+    powEl.value=data.p;
+    if(data.love) lovePending[turn]=true;
+    if(typeof data.cheekyWho==='number') cheekyWho=data.cheekyWho;
+    if(typeof data.cheekyShots==='number') cheekyShots=data.cheekyShots;
+    fire(true);
   }
 }
 function setNet(t){ netEl.textContent=t; }
