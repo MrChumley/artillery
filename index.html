@@ -95,6 +95,7 @@ let ac=null,swiping=false,holdTimer=0;
 let currentSeed=0,pendingSeed=null;
 let lovePending=[false,false], loveFired=0;
 let cheekyWho=-1,cheekyUntil=0,cheekyShots=0,cheekyNext=0,cheekyGaveCpu=false;
+let lastAng=[45,45], lastPow=[50,50];
 
 function rnd(a,b){return a+Math.random()*(b-a);}
 function clamp(v,a,b){return Math.max(a,Math.min(b,v));}
@@ -119,6 +120,10 @@ function localSeat(){if(netRole==='host')return 0;if(netRole==='guest')return 1;
 function cheekyOn(){return cheekyWho>=0 && Date.now()<cheekyUntil;}
 function whoElSync(){who.textContent=String(turn+1);}
 function vsCPU(){return !netRole && modeEl.value==='cpu';}
+function restoreAim(){
+  angEl.value=lastAng[turn];
+  powEl.value=lastPow[turn];
+}
 
 function startLoveMode(fromNet){
   if(!tanks) return;
@@ -146,6 +151,7 @@ function startCheeky(whoSeat, fromNet){
   turn=whoSeat;
   if(whoSeat===1) cheekyGaveCpu=true;
   whoElSync();
+  restoreAim();
   updateControls();
   if(!fromNet && conn && conn.open) send({type:'cheeky',who:whoSeat});
 }
@@ -185,11 +191,13 @@ function applyReset(seed){
   currentSeed=seed>>>0;
   lovePending=[false,false]; loveFired=0;
   cheekyWho=-1; cheekyUntil=0; cheekyShots=0; cheekyNext=0; cheekyGaveCpu=false;
+  lastAng=[45,45]; lastPow=[50,50];
   clearTimeout(aiTimer);
   setSeed(seed); makeTerrain();
   tanks=[placeTank(36),placeTank(W-36)];
   turn=0; shot=null; over=false; particles=[];
-  newWind(); who.textContent='1'; angEl.value=45; powEl.value=50;
+  newWind(); who.textContent='1';
+  restoreAim();
   updateControls();
   msg.textContent='Player 1 — set angle + power, then FIRE';
   sfxStart(); maybeAI();
@@ -236,6 +244,8 @@ function fire(fromNet){
   let a=Number(angEl.value), p=Number(powEl.value);
   a=clamp(a,1,179); p=clamp(p,1,100);
   angEl.value=a; powEl.value=p;
+  lastAng[turn]=a;
+  lastPow[turn]=p;
   const isLove=!!lovePending[turn];
   if(isLove){ lovePending[turn]=false; loveFired++; }
   if(!fromNet && cheekyOn() && turn===cheekyWho) cheekyShots=Math.max(0,cheekyShots-1);
@@ -312,6 +322,7 @@ function stepShot(){
 }
 function endTurn(){
   turn=1-turn; whoElSync(); newWind();
+  restoreAim();
   if(loveFired>=2) endWatchPaint();
   updateControls();
   msg.textContent='Player '+(turn+1)+' — set angle + power, then FIRE';
